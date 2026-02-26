@@ -366,11 +366,11 @@ impl<'a> ListState<'a> {
 
         let exercise_ind = self.selected_to_exercise_ind(selected)?;
         let exercise_name = self.app_state.reset_exercise_by_ind(exercise_ind)?;
-        self.update_rows();
         write!(
             self.message,
             "The exercise `{exercise_name}` has been reset",
         )?;
+        self.update_rows();
 
         Ok(())
     }

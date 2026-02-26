@@ -83,12 +83,6 @@ impl AppState {
         let mut exercises = exercise_infos
             .into_iter()
             .map(|exercise_info| {
-                // Leaking to be able to borrow in the watch mode `Table`.
-                // Leaking is not a problem because the `AppState` instance lives until
-                // the end of the program.
-                let path = exercise_info.path().leak();
-                let hint = exercise_info.hint.trim_ascii();
-
                 let canonical_path = dir_canonical_path.as_deref().map(|dir_canonical_path| {
                     let mut canonical_path;
                     if let Some(dir) = exercise_info.dir {
@@ -114,11 +108,11 @@ impl AppState {
                 Exercise {
                     dir: exercise_info.dir,
                     name: exercise_info.name,
-                    path,
+                    path: exercise_info.path(),
                     canonical_path,
                     test: exercise_info.test,
                     strict_clippy: exercise_info.strict_clippy,
-                    hint,
+                    hint: exercise_info.hint.trim_ascii(),
                     // Updated below.
                     done: false,
                 }
@@ -342,12 +336,12 @@ impl AppState {
         Ok(())
     }
 
-    pub fn reset_current_exercise(&mut self) -> Result<&'static str> {
+    pub fn reset_current_exercise(&mut self) -> Result<&str> {
         self.set_pending(self.current_exercise_ind)?;
         let exercise = self.current_exercise();
-        self.reset(self.current_exercise_ind, exercise.path)?;
+        self.reset(self.current_exercise_ind, &exercise.path)?;
 
-        Ok(exercise.path)
+        Ok(&exercise.path)
     }
 
     // Reset the exercise by index and return its name.
@@ -358,7 +352,7 @@ impl AppState {
 
         self.set_pending(exercise_ind)?;
         let exercise = &self.exercises[exercise_ind];
-        self.reset(exercise_ind, exercise.path)?;
+        self.reset(exercise_ind, &exercise.path)?;
 
         Ok(exercise.name)
     }
@@ -600,7 +594,7 @@ mod tests {
         Exercise {
             dir: None,
             name: "0",
-            path: "exercises/0.rs",
+            path: String::from("exercises/0.rs"),
             canonical_path: None,
             test: false,
             strict_clippy: false,

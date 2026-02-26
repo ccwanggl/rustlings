@@ -95,7 +95,7 @@ impl InfoFile {
     pub fn parse() -> Result<Self> {
         // Read a local `info.toml` if it exists.
         let slf = match fs::read_to_string("info.toml") {
-            // Leaking is fine since `InfoFile` is used until the end of the program.
+            // Leaking is fine since the info file is used until the end of the program.
             Ok(file_content) => toml::de::from_str::<Self>(file_content.leak())
                 .context("Failed to parse the `info.toml` file")?,
             Err(e) => {
