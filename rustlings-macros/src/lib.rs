@@ -3,14 +3,15 @@ use quote::quote;
 use serde::Deserialize;
 
 #[derive(Deserialize)]
-struct ExerciseInfo {
-    name: String,
-    dir: String,
+struct ExerciseInfo<'a> {
+    name: &'a str,
+    dir: &'a str,
 }
 
 #[derive(Deserialize)]
-struct InfoFile {
-    exercises: Vec<ExerciseInfo>,
+struct InfoFile<'a> {
+    #[serde(borrow)]
+    exercises: Vec<ExerciseInfo<'a>>,
 }
 
 #[proc_macro]
@@ -37,7 +38,7 @@ pub fn include_files(_: TokenStream) -> TokenStream {
             continue;
         }
 
-        dirs.push(exercise.dir.as_str());
+        dirs.push(exercise.dir);
         *dir_ind = dirs.len() - 1;
     }
 

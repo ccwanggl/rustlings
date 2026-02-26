@@ -128,7 +128,7 @@ fn main() -> Result<ExitCode> {
                 None
             } else {
                 // For the notify event handler thread.
-                // Leaking is not a problem because the slice lives until the end of the program.
+                // Leaking is fine since the slice is used until the end of the program.
                 Some(
                     &*app_state
                         .exercises()

@@ -54,7 +54,7 @@ pub struct AppState {
     exercises: Vec<Exercise>,
     // Caches the number of done exercises to avoid iterating over all exercises every time.
     n_done: u16,
-    final_message: String,
+    final_message: &'static str,
     state_file: File,
     // Preallocated buffer for reading and writing the state file.
     file_buf: Vec<u8>,
@@ -66,7 +66,7 @@ pub struct AppState {
 impl AppState {
     pub fn new(
         exercise_infos: Vec<ExerciseInfo>,
-        final_message: String,
+        final_message: &'static str,
     ) -> Result<(Self, StateFileStatus)> {
         let cmd_runner = CmdRunner::build()?;
         let mut state_file = OpenOptions::new()
@@ -87,34 +87,33 @@ impl AppState {
                 // Leaking is not a problem because the `AppState` instance lives until
                 // the end of the program.
                 let path = exercise_info.path().leak();
-                let name = exercise_info.name.leak();
-                let dir = exercise_info.dir.map(|dir| &*dir.leak());
-                let hint = exercise_info.hint.leak().trim_ascii();
+                let hint = exercise_info.hint.trim_ascii();
 
                 let canonical_path = dir_canonical_path.as_deref().map(|dir_canonical_path| {
                     let mut canonical_path;
-                    if let Some(dir) = dir {
+                    if let Some(dir) = exercise_info.dir {
                         canonical_path = String::with_capacity(
-                            2 + dir_canonical_path.len() + dir.len() + name.len(),
+                            2 + dir_canonical_path.len() + dir.len() + exercise_info.name.len(),
                         );
                         canonical_path.push_str(dir_canonical_path);
                         canonical_path.push_str(MAIN_SEPARATOR_STR);
                         canonical_path.push_str(dir);
                     } else {
-                        canonical_path =
-                            String::with_capacity(1 + dir_canonical_path.len() + name.len());
+                        canonical_path = String::with_capacity(
+                            1 + dir_canonical_path.len() + exercise_info.name.len(),
+                        );
                         canonical_path.push_str(dir_canonical_path);
                     }
 
                     canonical_path.push_str(MAIN_SEPARATOR_STR);
-                    canonical_path.push_str(name);
+                    canonical_path.push_str(exercise_info.name);
                     canonical_path.push_str(".rs");
                     canonical_path
                 });
 
                 Exercise {
-                    dir,
-                    name,
+                    dir: exercise_info.dir,
+                    name: exercise_info.name,
                     path,
                     canonical_path,
                     test: exercise_info.test,
@@ -616,7 +615,7 @@ mod tests {
             current_exercise_ind: 0,
             exercises: vec![dummy_exercise(), dummy_exercise(), dummy_exercise()],
             n_done: 0,
-            final_message: String::new(),
+            final_message: "",
             state_file: tempfile::tempfile().unwrap(),
             file_buf: Vec::new(),
             official_exercises: true,
