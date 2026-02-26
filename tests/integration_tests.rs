@@ -5,7 +5,7 @@ use std::{
 };
 
 enum Output<'a> {
-    FullStdout(&'a str),
+    FullStdout(&'a [u8]),
     PartialStdout(&'a str),
     PartialStderr(&'a str),
 }
@@ -61,32 +61,27 @@ impl<'a> Cmd<'a> {
 
         cmd.args(self.args).stdin(Stdio::null());
 
-        let output = match self.output {
-            None => cmd.output().unwrap(),
+        let output = cmd.output().unwrap();
+        match self.output {
+            None => (),
             Some(FullStdout(stdout)) => {
-                let output = cmd.stderr(Stdio::null()).output().unwrap();
-                assert_eq!(from_utf8(&output.stdout).unwrap(), stdout);
-                output
+                assert_eq!(output.stdout, stdout);
             }
             Some(PartialStdout(stdout)) => {
-                let output = cmd.stderr(Stdio::null()).output().unwrap();
                 assert!(from_utf8(&output.stdout).unwrap().contains(stdout));
-                output
             }
             Some(PartialStderr(stderr)) => {
-                let output = cmd.stdout(Stdio::null()).output().unwrap();
                 assert!(from_utf8(&output.stderr).unwrap().contains(stderr));
-                output
             }
         };
 
-        assert_eq!(
-            output.status.success(),
-            success,
-            "{cmd:?}\n\nstdout:\n{}\nstderr:\n{}",
-            from_utf8(&output.stdout).unwrap(),
-            from_utf8(&output.stderr).unwrap(),
-        );
+        if output.status.success() != success {
+            panic!(
+                "{cmd:?}\n\nstdout:\n{}\n\nstderr:\n{}",
+                from_utf8(&output.stdout).unwrap(),
+                from_utf8(&output.stderr).unwrap(),
+            );
+        }
     }
 
     #[inline]
@@ -153,7 +148,7 @@ fn hint() {
     Cmd::default()
         .current_dir("tests/test_exercises")
         .args(&["hint", "test_failure"])
-        .output(FullStdout("The answer to everything: 42\n"))
+        .output(FullStdout(b"The answer to everything: 42\n"))
         .success();
 }
 
