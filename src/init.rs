@@ -107,7 +107,7 @@ pub fn init() -> Result<()> {
         }
 
         stdout.write_all(b"The directory `rustlings` has been added to `workspace.members` in the `Cargo.toml` file of this Cargo workspace.\n")?;
-        fs::remove_dir_all("rustlings")
+        fs::remove_dir_all(rustlings_dir)
             .context("Failed to remove the temporary directory `rustlings/`")?;
         init_git = false;
     } else {
