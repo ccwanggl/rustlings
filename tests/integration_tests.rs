@@ -61,30 +61,32 @@ impl<'a> Cmd<'a> {
 
         cmd.args(self.args).stdin(Stdio::null());
 
-        let status = match self.output {
-            None => cmd
-                .stdout(Stdio::null())
-                .stderr(Stdio::null())
-                .status()
-                .unwrap(),
+        let output = match self.output {
+            None => cmd.output().unwrap(),
             Some(FullStdout(stdout)) => {
                 let output = cmd.stderr(Stdio::null()).output().unwrap();
                 assert_eq!(from_utf8(&output.stdout).unwrap(), stdout);
-                output.status
+                output
             }
             Some(PartialStdout(stdout)) => {
                 let output = cmd.stderr(Stdio::null()).output().unwrap();
                 assert!(from_utf8(&output.stdout).unwrap().contains(stdout));
-                output.status
+                output
             }
             Some(PartialStderr(stderr)) => {
                 let output = cmd.stdout(Stdio::null()).output().unwrap();
                 assert!(from_utf8(&output.stderr).unwrap().contains(stderr));
-                output.status
+                output
             }
         };
 
-        assert_eq!(status.success(), success, "{cmd:?}");
+        assert_eq!(
+            output.status.success(),
+            success,
+            "{cmd:?}\n\nstdout:\n{}\nstderr:\n{}",
+            from_utf8(&output.stdout).unwrap(),
+            from_utf8(&output.stderr).unwrap(),
+        );
     }
 
     #[inline]
