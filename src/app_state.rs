@@ -106,8 +106,8 @@ impl AppState {
                 });
 
                 Exercise {
-                    dir: exercise_info.dir,
                     name: exercise_info.name,
+                    dir: exercise_info.dir,
                     path: exercise_info.path(),
                     canonical_path,
                     test: exercise_info.test,
@@ -592,8 +592,8 @@ mod tests {
 
     fn dummy_exercise() -> Exercise {
         Exercise {
-            dir: None,
             name: "0",
+            dir: None,
             path: String::from("exercises/0.rs"),
             canonical_path: None,
             test: false,

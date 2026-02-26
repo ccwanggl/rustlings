@@ -66,8 +66,8 @@ fn run_bin(
 
 /// See `info_file::ExerciseInfo`
 pub struct Exercise {
-    pub dir: Option<&'static str>,
     pub name: &'static str,
+    pub dir: Option<&'static str>,
     /// Path of the exercise file starting with the `exercises/` directory.
     pub path: String,
     pub canonical_path: Option<String>,
