@@ -38,6 +38,7 @@ impl<'a> Cmd<'a> {
         self
     }
 
+    #[track_caller]
     fn assert(&self, success: bool) {
         let rustlings_bin = {
             let mut path = env::current_exe().unwrap();
@@ -87,11 +88,13 @@ impl<'a> Cmd<'a> {
     }
 
     #[inline]
+    #[track_caller]
     fn success(&self) {
         self.assert(true);
     }
 
     #[inline]
+    #[track_caller]
     fn fail(&self) {
         self.assert(false);
     }

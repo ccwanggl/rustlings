@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: swatinem/rust-cache@v2
       - name: cargo test
-        run: cargo test --workspace
+        run: RUST_BACKTRACE=1 cargo test --workspace
   dev-check:
     runs-on: ubuntu-latest
     steps:
